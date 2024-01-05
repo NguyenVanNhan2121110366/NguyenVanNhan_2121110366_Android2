@@ -4,7 +4,9 @@ import { StyleSheet, Text, View, Image } from 'react-native';
 import Search from './Search';
 
 export default function Header() {
+
     return (
+        
         <View style={styles.header}>
             <View style={styles.text}>
                 <Text style={styles.title}>Welcome to Minh Nhan Shop</Text>
@@ -17,12 +19,11 @@ export default function Header() {
                     style={styles.logo}
                     source={require('../Image/back.jpg')}
                 />
-                {/* <Text style={styles.title}>Login</Text> */}
             </View>
+            
             <View style={styles.search}>
                 <Search></Search>
             </View>
-
         </View>
     );
 }
@@ -39,6 +40,8 @@ const styles = StyleSheet.create({
     },
     text: {
         marginBottom: 10,
+        marginTop:-30
+        
     },
     title: {
         fontSize: 20,
@@ -54,9 +57,9 @@ const styles = StyleSheet.create({
     },
     search:
     {
-        marginTop:5,
+        marginTop: 5,
         height: 100,
         width: 370,
-        marginBottom:-50
+        marginBottom: -50
     }
 });

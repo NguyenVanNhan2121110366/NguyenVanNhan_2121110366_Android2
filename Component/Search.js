@@ -4,15 +4,22 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { CartContext } from './CartContent';
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { SearchContext } from './SearchContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const Search = () => {
+    const { setSearchResults } = useContext(SearchContext);
+    const [searchText, setSearchText] = useState('');
     const navigation = useNavigation();
+    const handleSearch = () => {
+        setSearchResults(searchText);
+    };
     const CartScreen = () => {
         navigation.navigate('CartScreen');
     };
     const { cartItemCount, updateCartItemCount } = useContext(CartContext);
-    const [searchText, setSearchText] = useState('');
+
     useEffect(() => {
         fetchCartItems();
     }, []);
@@ -30,9 +37,7 @@ const Search = () => {
     };
 
 
-    const handleSearch = () => {
-        console.log('Performing search for:', searchText);
-    };
+   
 
     return (
         <View style={styles.searchContainer}>
@@ -52,7 +57,7 @@ const Search = () => {
 
             </View>
             <View style={styles.cart}>
-                <TouchableOpacity style={styles.cartContainer} onPress={()=>CartScreen()}>
+                <TouchableOpacity style={styles.cartContainer} onPress={() => CartScreen()}>
                     <FontAwesome name="shopping-cart" size={30} color="black" />
                     <View style={styles.cartCountContainer}>
                         <Text style={styles.cartCountText}>{cartItemCount}</Text>
@@ -87,6 +92,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         width: '70%', // Giảm bề ngang thành phần tìm kiếm
         elevation: 2,
+        marginLeft: 10
     },
     input: {
         flex: 1,
@@ -96,6 +102,7 @@ const styles = StyleSheet.create({
     },
     searchButton: {
         padding: 10,
+
     },
     cart: {
         marginLeft: 10,

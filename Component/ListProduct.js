@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
-
+import { SearchContext } from './SearchContext';
 export default function ListProduct() {
   const navigation = useNavigation();
   const handleProductPress = (product) => {
@@ -11,33 +12,52 @@ export default function ListProduct() {
   };
 
   const [products, setProducts] = useState([]);
+  const { searchResults, setSearchResults } = useContext(SearchContext);
 
   useEffect(() => {
     getAllProduct();
-  }, []);
+  }, [searchResults]);
 
   const getAllProduct = () => {
+    let url = 'https://fakestoreapi.com/products';
+
     axios
-      .get('https://fakestoreapi.com/products')
+      .get(url)
       .then(function (response) {
-        // handle success
-        setProducts(response.data);
+        let products = response.data;
+
+        if (searchResults && searchResults.length > 0) {
+          const searchValue = searchResults.toLowerCase();
+
+          products = products.filter(product => {
+            const title = product.title.toLowerCase();
+            return title.startsWith(searchValue);
+          });
+        }
+
+        setProducts(products);
       })
       .catch(function (error) {
-        // handle error
         alert(error.message);
-      })
-      .finally(function () {
-        // always executed
-        alert('Finally called');
       });
+  };
+
+  const handleSeeMorePress = () => {
+    if (searchResults !== '') {
+      setSearchResults('');
+    } else {
+      getAllProduct();
+    }
   };
 
   return (
     <View>
       <View style={styles.catetitle}>
         <Text style={{ fontSize: 20, color: 'red', fontWeight: '600' }}>Sản phẩm</Text>
-        <Text style={{ fontSize: 15 }}>Xem thêm</Text>
+        <TouchableOpacity onPress={handleSeeMorePress}>
+          <Text style={{ color: 'blue', fontSize: 15 }}>Xem thêm</Text>
+        </TouchableOpacity>
+
       </View>
       <ScrollView>
         <View style={styles.container}>
@@ -77,8 +97,8 @@ const styles = StyleSheet.create({
   catetitle: {
     flexDirection: 'row', justifyContent: 'space-between',
     marginTop: 5,
-    marginLeft:15,
-    marginRight:15
+    marginLeft: 15,
+    marginRight: 15
   },
   item: {
     width: '48%',

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Button } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Button ,Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartContext } from './CartContent';
+import Footer from './Footer';
 
 const CartScreen = () => {
     const { updateCartItemCount } = useContext(CartContext);
@@ -62,13 +63,16 @@ const CartScreen = () => {
     };
 
     const handleCheckout = () => {
-        // Thực hiện quá trình thanh toán ở đây
+        
+        Alert.alert('Thanh toán thành công')
         console.log('Checkout');
     };
 
     return (
+        <>
+        
         <View style={styles.container}>
-            <Text style={styles.title}>Cart</Text>
+            <Text style={styles.title}>Giỏ hàng</Text>
             {cartItems.length > 0 ? (
                 <FlatList
                     data={cartItems}
@@ -80,18 +84,20 @@ const CartScreen = () => {
                                 <Text style={styles.cartItemPrice}>Price: ${item.price.toFixed(2)}</Text>
                             </View>
                             <TouchableOpacity onPress={() => handleRemoveItem(item.id)}>
-                                <Text style={styles.removeItemButton}>Remove</Text>
+                                <Text style={styles.removeItemButton}>Xóa</Text>
                             </TouchableOpacity>
                         </View>
                     )}
                     keyExtractor={(item) => item.id.toString()}
                 />
             ) : (
-                <Text style={styles.emptyCartText}>Your cart is empty.</Text>
+                <Text style={styles.emptyCartText}>Giỏ hàng của bạn trống.</Text>
             )}
-            <Text style={styles.totalPrice}>Total Price: ${totalPrice.toFixed(2)}</Text>
-            <Button title="Checkout" onPress={handleCheckout} />
+            <Text style={styles.totalPrice}>Giá tiền: ${totalPrice.toFixed(2)}</Text>
+            <Button title="Thanh toán" onPress={handleCheckout} />
         </View>
+        </>
+        
     );
 };
 

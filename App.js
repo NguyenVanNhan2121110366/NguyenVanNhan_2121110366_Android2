@@ -1,68 +1,95 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import Header from './Component/Header';
-import Footer from './Component/Footer';
-import Login from './Component/Login';
-import ListCategory from './Component/ListCategory';
-import ListProduct from './Component/ListProduct';
-import { ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import SingleProductScreen from './Component/SingleProductScreen';
 import HomeScreen from './Component/HomeScreen';
 import CartScreen from './Component/CartScreen';
 import { CartProvider } from './Component/CartContent';
-import Search from './Component/Search';
+import Logins from './Component/Login';
+import Register from './Component/Register';
+import AuthContext from './Component/AuthContext';
+import { SearchProvider } from './Component/SearchContext';
+import Footer from './Component/Footer';
+
 
 const Stack = createStackNavigator();
 
 export default function App() {
+  const [registeredUser, setRegisteredUser] = useState(null);
+
+  const register = (email, password) => {
+    setRegisteredUser({ email, password });
+  };
+
+  const login = (email, password) => {
+    if (registeredUser && registeredUser.email === email && registeredUser.password === password) {
+      return true;
+    }
+    return false;
+  };
   return (
-    <CartProvider>
-      <View style={styles.container}>
-        {/* <Text>Hello</Text> */}
-        <StatusBar style="auto" />
-        
-        <NavigationContainer>
-          {/* <ListCategory></ListCategory>
+    <AuthContext.Provider value={{ register, login }}>
+      <CartProvider>
+        <SearchProvider>
+          <View style={styles.container}>
+            {/* <Text>Hello</Text> */}
+            <StatusBar style="auto" />
+
+            <NavigationContainer>
+              {/* <ListCategory></ListCategory>
         <ListProduct></ListProduct> */}
+              <Stack.Navigator initialRouteName="Logins">
+                <Stack.Screen
+                  name="Logins"
+                  component={Logins}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name='Register'
+                  component={Register}
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="HomeScreen"
+                  component={HomeScreen}
+                  options={{
+                    headerTitle: 'Trang chủ',
+                    headerLeft: null,
+                    headerTitleStyle: {
+                      fontSize: 30,
+                      fontWeight: 'bold',
+                      color: '#808080',
+                      textShadowColor: 'black',
+                      textShadowOffset: { width: -2, height: 2 },
+                      textShadowRadius: 1,
+                      marginLeft: 110,
+                      marginTop: -20,
+                    },
+                  }}
+                />
+                <Stack.Screen name="SingleProduct" component={SingleProductScreen} />
+                <Stack.Screen
+                  name="CartScreen"
+                  component={CartScreen}
+                  options={{ headerTitle: 'Giỏ hàng' }}
+                />
+              </Stack.Navigator>
+              {/* <Footer></Footer> */}
+            </NavigationContainer>
 
-          <Stack.Navigator initialRouteName="HomeScreen">
-            <Stack.Screen
-              name="HomeScreen"
-              component={HomeScreen}
-              options={{
-                headerTitle: 'Trang chủ',
-                headerTitleStyle: {
-                  fontSize: 20,
-                  fontWeight: 'bold',
-                  color: '#808080', // Mã màu hex cho xám
-                  textShadowColor: 'black', // Mã màu CSS cho đen
-                  textShadowOffset: { width: -2, height: 2 }, // Độ dịch chuyển của đổ bóng
-                  textShadowRadius: 1, // Bán kính của đổ bóng
-                  marginLeft: 130,
-                  marginTop: -8,
-                  //marginBottom:
-                },
-              }}
-            />
-            <Stack.Screen name="SingleProduct" component={SingleProductScreen} />
-            <Stack.Screen
-              name="CartScreen"
-              component={CartScreen}
-              options={{ headerTitle: 'Giỏ hàng' }}
-            />
-          </Stack.Navigator>
+            {/* <Login></Login> */}
+            
+            
+          </View>
+        </SearchProvider>
 
+      </CartProvider>
+      
+    </AuthContext.Provider>
+    
 
-        </NavigationContainer>
-
-
-
-        {/* <Login></Login> */}
-        {/* <Footer></Footer> */}
-      </View>
-    </CartProvider>
 
   );
 }

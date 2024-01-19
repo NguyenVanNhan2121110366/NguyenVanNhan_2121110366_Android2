@@ -1,10 +1,8 @@
-import { StatusBar } from 'expo-status-bar';
-import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, TextInput, Image, ScrollView } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import {  SafeAreaView, StyleSheet, Text, View, Image } from 'react-native';
 export default function ListCategory() {
     return (
         <>
-        
+
             <View style={styles.catetitle}>
                 <Text style={{ fontSize: 20, color: "red", fontWeight: "600" }}>Danh mục</Text>
                 <Text style={{ fontSize: 15, color: "blue", fontWeight: "600" }}>Xem thêm</Text>

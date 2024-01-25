@@ -1,10 +1,15 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Button ,Alert} from 'react-native';
+import React, { useEffect, } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Button, Alert, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartContext } from './CartContent';
-import Footer from './Footer';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { useState, useContext } from 'react';
 
 const CartScreen = () => {
+    const navigation = useNavigation();
+
+
     const { updateCartItemCount } = useContext(CartContext);
 
     const [cartItems, setCartItems] = useState([]);
@@ -32,6 +37,7 @@ const CartScreen = () => {
     };
 
     const handleRemoveItem = async (itemId) => {
+        console.log('Removing item with ID:', itemId);
         try {
             const updatedCartItems = cartItems.map(item => {
                 if (item.id === itemId) {
@@ -53,6 +59,26 @@ const CartScreen = () => {
         }
     };
 
+    const handleAddItem = async (itemId) => {
+        console.log('Adding item with ID:', itemId);
+        try {
+            const updatedCartItems = cartItems.map(item => {
+                if (item.id === itemId) {
+                    item.quantity += 1;
+                }
+                return item;
+            });
+
+            setCartItems(updatedCartItems);
+            await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+
+            updateCartItemCount(getCartItemCount(updatedCartItems));
+            calculateTotalPrice();
+        } catch (error) {
+            console.log('Error adding item to cart:', error);
+        }
+    };
+
     const calculateTotalPrice = () => {
         const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
         setTotalPrice(totalPrice);
@@ -62,15 +88,40 @@ const CartScreen = () => {
         return cartItems.reduce((total, item) => total + item.quantity, 0);
     };
 
-    const handleCheckout = () => {
-        
-        Alert.alert('Thanh toán thành công')
-        console.log('Checkout');
+    const handleCheckout = async () => {
+        if (cartItems.length === 0) {
+            Alert.alert('Giỏ hàng trống');
+        } else {
+            await AsyncStorage.removeItem('cartItems');
+            setCartItems([]);
+            setTotalPrice(0);
+            updateCartItemCount(0);
+
+            Alert.alert('Thanh toán thành công', 'Tổng cộng là: $' + totalPrice.toFixed(2));
+            console.log('Checkout');
+        }
     };
 
+    const handleFormCheckOut = () => {
+        navigation.navigate('FormCheckOut');
+    };
+
+    const handleQuantityChange = (itemId, quantity) => {
+        const updatedCartItems = cartItems.map(item => {
+            if (item.id === itemId) {
+                item.quantity = isNaN(quantity) ? 0 : quantity;
+            }
+            if (item.quantity === 0) {
+                item.quantity = 1
+            }
+
+            return item;
+        });
+
+        setCartItems(updatedCartItems);
+        calculateTotalPrice();
+    };
     return (
-        <>
-        
         <View style={styles.container}>
             <Text style={styles.title}>Giỏ hàng</Text>
             {cartItems.length > 0 ? (
@@ -80,24 +131,41 @@ const CartScreen = () => {
                         <View style={styles.cartItem}>
                             <Image source={{ uri: item.image }} style={styles.cartItemImage} />
                             <View style={styles.cartItemInfo}>
-                                <Text style={styles.cartItemTitle}>{item.title} ({item.quantity})</Text>
-                                <Text style={styles.cartItemPrice}>Price: ${item.price.toFixed(2)}</Text>
+                                <Text style={styles.cartItemTitle}>{item.title}</Text>
+                                <Text style={styles.cartItemPrice}>Giá: ${item.price.toFixed(2)}</Text>
                             </View>
-                            <TouchableOpacity onPress={() => handleRemoveItem(item.id)}>
-                                <Text style={styles.removeItemButton}>Xóa</Text>
-                            </TouchableOpacity>
+                            <View style={styles.Remove}>
+                                <TouchableOpacity onPress={() => handleRemoveItem(item.id)}>
+                                    <View style={styles.removeItemIcon}>
+                                        <FontAwesome5 name="minus" size={30} color="black" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.Add}>
+                                <TouchableOpacity onPress={() => handleAddItem(item.id)}>
+                                    <View style={styles.addItemIcon}>
+                                        <FontAwesome5 name="plus" size={30} color="black" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                            <TextInput
+                                style={styles.quantityInput}
+                                value={item.quantity !== null ? item.quantity.toString() : ''}
+                                onChangeText={(text) => handleQuantityChange(item.id, parseInt(text))}
+                                keyboardType="numeric"
+                            />
                         </View>
                     )}
                     keyExtractor={(item) => item.id.toString()}
                 />
             ) : (
-                <Text style={styles.emptyCartText}>Giỏ hàng của bạn trống.</Text>
+                <Text style={styles.emptyText}>Giỏ hàng trống</Text>
             )}
-            <Text style={styles.totalPrice}>Giá tiền: ${totalPrice.toFixed(2)}</Text>
-            <Button title="Thanh toán" onPress={handleCheckout} />
+            <View style={styles.totalContainer}>
+                <Text style={styles.totalText}>Tổng cộng: ${totalPrice.toFixed(2)}</Text>
+                <Button title="Thanh toán" onPress={handleCheckout} />
+            </View>
         </View>
-        </>
-        
     );
 };
 
@@ -107,7 +175,7 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     title: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 16,
     },
@@ -117,34 +185,59 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     cartItemImage: {
-        width: 50,
-        height: 50,
-        marginRight: 8,
+        width: 80,
+        height: 80,
+        marginRight: 16,
     },
     cartItemInfo: {
         flex: 1,
     },
     cartItemTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    cartItemPrice: {
-        fontSize: 14,
-    },
-    removeItemButton: {
-        fontSize: 14,
-        color: 'red',
-        marginTop: 8,
-    },
-    emptyCartText: {
-        fontSize: 16,
-        fontStyle: 'italic',
-    },
-    totalPrice: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginTop: 16,
+        marginBottom: 8,
+    },
+    cartItemPrice: {
+        fontSize: 16,
+    },
+    Remove: {
+        marginRight: 10,
+    },
+    Add: {
+        marginLeft: 10,
+    },
+    removeItemIcon: {
+        backgroundColor: 'red',
+        borderRadius: 20,
+        padding: 5,
+    },
+    addItemIcon: {
+        backgroundColor: 'green',
+        borderRadius: 20,
+        padding: 5,
+    },
+    quantityInput: {
+        borderWidth: 1,
+        borderColor: '#dcdcdc',
+        borderRadius: 5,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        width: 50,
         textAlign: 'center',
+    },
+    emptyText: {
+        fontSize: 18,
+        fontStyle: 'italic',
+        textAlign: 'center',
+    },
+    totalContainer: {
+        marginTop: 16,
+        alignItems: 'center',
+    },
+    totalText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 8,
     },
 });
 

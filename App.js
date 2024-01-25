@@ -11,7 +11,7 @@ import Logins from './Component/Login';
 import Register from './Component/Register';
 import AuthContext from './Component/AuthContext';
 import { SearchProvider } from './Component/SearchContext';
-import Footer from './Component/Footer';
+
 
 
 const Stack = createStackNavigator();
